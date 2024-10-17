@@ -3,6 +3,9 @@ import {Task} from "./Models/Task";
 import {User} from "./Models/User";
 import {TaskManager} from "./Managers/TaskManager";
 import {Printer} from "./Services/Printer";
+import './css/sakura.css';
+import './css/styles.css';
+import './css/sass/test.scss';
 
 // ---------- NENURASINETI -------------------------------------------
 const taskManager = new TaskManager();
@@ -26,7 +29,7 @@ function createTask(): void {
 }
 
 async function PrintAllTasks(): Promise<void> {
-    const tasks: Response = await fetch('db/tasks.json');
+    const tasks: Response = await fetch('tasks.json');
     const tasksJson = await tasks.json();
 
     tasksJson.forEach((taskData: any): void => {

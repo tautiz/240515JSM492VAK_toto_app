@@ -1,0 +1,16 @@
+$mainColor: #b6b2b2;
+$secondaryColor: #918e8e;
+$thirdColor: black;
+
+body {
+    background-color: $mainColor;
+}
+
+header {
+    background-color: $secondaryColor;
+}
+
+footer {
+    background-color: $thirdColor;
+    color: invert($thirdColor);
+}
