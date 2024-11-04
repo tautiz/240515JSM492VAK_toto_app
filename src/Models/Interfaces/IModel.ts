@@ -6,5 +6,4 @@ export interface IModel {
     setTitle(title: string): void;
     setStatus(status: string): void;
     setDate(date: Date): void;
-    setId(id: string): void;
 }

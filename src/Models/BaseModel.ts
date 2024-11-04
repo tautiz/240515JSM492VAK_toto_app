@@ -1,14 +1,13 @@
-import {IModel} from "./IModel";
+import {IModel} from "./Interfaces/IModel";
 
 export class BaseModel implements IModel {
-    private id: string;
+    private _id: string = '';
     private status: string;
     private date: Date;
 
     constructor(private title: string) {
-        this.id = crypto.randomUUID();
         this.status = 'created';
-        this.date = new Date();
+        this.date = new Date('1970-01-01T00:00:00.000Z');
     }
 
     getTitle(): string {
@@ -24,11 +23,11 @@ export class BaseModel implements IModel {
     }
 
     getId(): string {
-        return this.id;
+        return this._id;
     }
 
     setId(id: string): void {
-        this.id = id;
+        this._id = id;
     }
 
     setTitle(title: string): void {

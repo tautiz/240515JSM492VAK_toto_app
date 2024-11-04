@@ -1,4 +1,4 @@
-import {IModel} from "./Models/IModel";
+import {IModel} from "./Models/Interfaces/IModel";
 import {Task} from "./Models/Task";
 import {User} from "./Models/User";
 import {TaskManager} from "./Managers/TaskManager";
@@ -24,12 +24,12 @@ function createTask(): void {
   const taskElement = document.getElementById("newTaskInput") as HTMLInputElement;
   const taskTitle: string = taskElement.value;
   const taskItem = new Task (taskTitle, kamPriklauso.getId());
-  taskManager.add(taskItem);
+  taskManager.createTask(taskItem);
   taskPrinter.printAll()
 }
 
 async function PrintAllTasks(): Promise<void> {
-    const tasks: Response = await fetch('tasks.json');
+    const tasks: Response = await fetch('http://localhost:3000/todo');
     const tasksJson = await tasks.json();
 
     tasksJson.forEach((taskData: any): void => {
