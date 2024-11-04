@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $mainColor: #b6b2b2;
 $secondaryColor: #918e8e;
 $thirdColor: black;
@@ -12,5 +14,13 @@ header {
 
 footer {
     background-color: $thirdColor;
-    color: invert($thirdColor);
+    color: color.invert($thirdColor);
+}
+// delete button style
+.delete-button {
+    ::content {
+        content: "Delete";
+    }
+    background-color: red;
+    color: white;
 }

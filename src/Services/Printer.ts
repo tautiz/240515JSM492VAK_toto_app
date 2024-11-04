@@ -1,15 +1,18 @@
-import {IManager} from "../Managers/IManager";
-import {IModel} from "../Models/IModel";
-
+import {IModel} from "../Models/Interfaces/IModel";
+import IManager from "../Managers/IManager";
 export class Printer {
 
-    constructor(private manager: IManager,private writerFunction: (item: IModel) => void) {
+    constructor(private manager: IManager, private writer: { 
+        write: (item: IModel) => void,
+        clear: () => void 
+    }) {
     }
 
-    printAll(): void {
-        const models: IModel[] = this.manager.getAll();
+    async printAll(): Promise<void> {
+        const models: IModel[] = await this.manager.getAll();
+        this.writer.clear();
         models.forEach((model: IModel): void => {
-            this.writerFunction(model);
+            this.writer.write(model);
         });
     }
 }

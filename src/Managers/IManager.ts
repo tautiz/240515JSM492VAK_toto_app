@@ -1,9 +1,9 @@
-import {IModel} from "../Models/IModel";
+import {IModel} from "../Models/Interfaces/IModel";
 
-export interface IManager {
-    add(model: IModel): void;
-    remove(id: string): void;
+export default interface IManager {
+    create(model: IModel): void;
+    remove(model: IModel): void;
     update(model: IModel): void;
-    getAll(): IModel[];
-    getById(id: string): IModel|null;
+    getAll(): Promise<IModel[]>;
+    getById(id: string): Promise<IModel | null>;
 }
