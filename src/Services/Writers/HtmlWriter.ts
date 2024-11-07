@@ -8,23 +8,22 @@ export class HtmlWriter implements IWriter {
     constructor(private manager: IManager) {}
 
     async write(item: IModel): Promise<void> {
-        const listElement = document.getElementById("tasksList") as HTMLUListElement;
-        const listItem: HTMLLIElement = document.createElement("li");
-        listItem.textContent = item.getTitle();
-        listItem.classList.add('task');
+        const listElement = document.getElementById("todo-list") as HTMLDivElement;
 
-        // Sukuriam mygtuka salinimui su data-id atributu
-        const deleteButton: HTMLButtonElement = document.createElement("button");
-        deleteButton.textContent = "X";
-        deleteButton.classList.add("delete-button");
-        deleteButton.setAttribute('data-id', item.getId());
+        const taskItemHtml = `
+        <div class="todo-item">
+          <input type="checkbox" id="task_${item.getId()}" class="todo-checkbox">
+          <label for="task_${item.getId()}" class="todo-label">${item.getTitle()}</label>
 
-        listItem.appendChild(deleteButton);
-        listElement.appendChild(listItem);
+          <input type="checkbox" id="del_${item.getId()}" class="delete-checkbox" data-id="${item.getId()}">
+          <label for="del_${item.getId()}" class="delete-label" >×</label>
+        </div>
+        `
+        listElement.innerHTML += taskItemHtml;
     }
     
     clear(): void {
-        const listElement = document.getElementById("tasksList") as HTMLUListElement;
+        const listElement = document.getElementById("todo-list") as HTMLDivElement;
         listElement.innerHTML = '';
     }
 }

@@ -16,7 +16,7 @@ export class TaskController {
         this.outputHandler = new OutputHandler(this.taskManager, htmlWriter);
         this.view = new TaskView(htmlWriter);
 
-        this.initialize();
+        document.addEventListener('DOMContentLoaded', () => this.initialize());
     }
 
     private initialize(): void {
@@ -24,18 +24,16 @@ export class TaskController {
         this.checkServerStatus();
 
         // Iškviečia užduočių atnaujinimą, kai puslapis įkraunamas
-        document.addEventListener('DOMContentLoaded', () => {
-            this.outputHandler.handle().catch(error => {
-                this.view.showError('Nepavyko įkelti užduočių.');
-            });
+        this.outputHandler.handle().catch(error => {
+            this.view.showError('Nepavyko įkelti užduočių.');
         });
 
         // Užduoties kūrimo mygtuko event listeneris
-        const createButton = document.getElementById("createButton") as HTMLButtonElement;
+        const createButton = document.querySelector(".todo-form > button") as HTMLButtonElement;
         createButton.addEventListener("click", () => this.createTask());
 
         // Ištrynimo mygtukų event listeneris (delegate)
-        const tasksList = document.getElementById("tasksList") as HTMLUListElement;
+        const tasksList = document.getElementById("todo-list") as HTMLDivElement;
         tasksList.addEventListener("click", (event) => this.handleDelete(event));
     }
 
@@ -75,11 +73,11 @@ export class TaskController {
 
     private async handleDelete(event: Event): Promise<void> {
         const target = event.target as HTMLElement;
-        if (target && target.classList.contains('delete-button')) {
+        if (target && target.classList.contains('delete-checkbox')) {
             const taskId = target.getAttribute('data-id');
             if (taskId) {
-                // const confirmed = confirm('Ar tikrai norite ištrinti šią užduotį?');
-                // if (confirmed) {
+                const confirmed = confirm('Ar tikrai norite ištrinti šią užduotį?');
+                if (confirmed) {
                     try {
                         const task = await this.taskManager.getById(taskId);
                         if (task) {
@@ -92,7 +90,7 @@ export class TaskController {
                         console.error('Nepavyko ištrinti užduoties:', error);
                         this.view.showError('Nepavyko ištrinti užduoties.');
                     }
-                // }
+                }
             }
         }
     }

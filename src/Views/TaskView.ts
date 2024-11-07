@@ -24,7 +24,12 @@ export class TaskView {
         const errorElement = document.createElement('div');
         errorElement.classList.add('error-message');
         errorElement.textContent = `Klaida: ${message}`;
-        document.body.prepend(errorElement);
+        const errorsContainer = document.querySelector('.errors');
+        if (errorsContainer) {
+            errorsContainer.prepend(errorElement);
+        } else {
+            document.body.prepend(errorElement);
+        }
 
         // Ištrinam klaidą po 5 sekundžių
         setTimeout(() => {
