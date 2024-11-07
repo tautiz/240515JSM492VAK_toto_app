@@ -18,6 +18,7 @@ footer {
 }
 // delete button style
 .delete-button {
+    float: right;
     ::content {
         content: "Delete";
     }

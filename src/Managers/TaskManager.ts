@@ -1,5 +1,4 @@
 import {Task} from "../Models/Task";
-import {User} from "../Models/User";
 import BaseManager from "../Managers/BaseManager";
 import IManager from "../Managers/IManager";
 
@@ -19,13 +18,6 @@ export class TaskManager extends BaseManager implements IManager {
     }
 
     async create(task: Task): Promise<void> {
-        // TODO: Work in progress, get logged In user
-        const user = new User('Tautvydas');
-        user.setId("1234");
-        // TODO: End of get logged In user
-
-        task.setAuthor(user);
-
         fetch('http://localhost:3000/todo', {
             method: 'POST',
             headers: {
