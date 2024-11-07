@@ -16,9 +16,19 @@ export class TaskView {
     }
 
     showError(message: string): void {
+        const existingError = document.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+
         const errorElement = document.createElement('div');
         errorElement.classList.add('error-message');
         errorElement.textContent = `Klaida: ${message}`;
         document.body.prepend(errorElement);
+
+        // Ištrinam klaidą po 5 sekundžių
+        setTimeout(() => {
+            errorElement.remove();
+        }, 5000);
     }
 }

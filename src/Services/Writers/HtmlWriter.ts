@@ -11,15 +11,14 @@ export class HtmlWriter implements IWriter {
         const listElement = document.getElementById("tasksList") as HTMLUListElement;
         const listItem: HTMLLIElement = document.createElement("li");
         listItem.textContent = item.getTitle();
-        // Sukuriam mygtuka salinimui
+        listItem.classList.add('task');
+
+        // Sukuriam mygtuka salinimui su data-id atributu
         const deleteButton: HTMLButtonElement = document.createElement("button");
         deleteButton.textContent = "X";
         deleteButton.classList.add("delete-button");
-        deleteButton.addEventListener("click", async () => {
-            if (item instanceof Task) {
-                await this.manager.remove(item);
-            }
-        });
+        deleteButton.setAttribute('data-id', item.getId());
+
         listItem.appendChild(deleteButton);
         listElement.appendChild(listItem);
     }

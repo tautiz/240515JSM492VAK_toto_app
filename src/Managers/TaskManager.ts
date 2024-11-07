@@ -1,4 +1,5 @@
 import {Task} from "../Models/Task";
+import {User} from "../Models/User";
 import BaseManager from "../Managers/BaseManager";
 import IManager from "../Managers/IManager";
 
@@ -18,12 +19,14 @@ export class TaskManager extends BaseManager implements IManager {
     }
 
     async create(task: Task): Promise<void> {
-        fetch('http://localhost:3000/todo', {
+        const rez = await fetch('http://localhost:3000/todo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(task)
+        }).catch((error) => {
+            console.error('Nepavyko sukurti užduoties:', error);
         });
     }
 
@@ -53,6 +56,13 @@ export class TaskManager extends BaseManager implements IManager {
             .then(data => {
                 if (data) {
                     result = new Task(data.title, data.description);
+                    result.setId(data._id);
+                    const user = new User(data.author);
+                    user.setId(data.authorId);
+                    result.setAuthor(user);
+                    result.setStatus(data.status);
+                    result.setCreatedAt(data.createdAt);
+                    result.setUpdatedAt(data.updatedAt);
                 }
             });
         return result;

@@ -33,6 +33,10 @@ export class TaskController {
         // Užduoties kūrimo mygtuko event listeneris
         const createButton = document.getElementById("createButton") as HTMLButtonElement;
         createButton.addEventListener("click", () => this.createTask());
+
+        // Ištrynimo mygtukų event listeneris (delegate)
+        const tasksList = document.getElementById("tasksList") as HTMLUListElement;
+        tasksList.addEventListener("click", (event) => this.handleDelete(event));
     }
 
     private async checkServerStatus(): Promise<void> {
@@ -61,12 +65,35 @@ export class TaskController {
             user.setId("1234");
 
             const taskItem = new Task(taskTitle, user.getId());
-            await this.taskManager.create(taskItem);
-            this.outputHandler.handle();
+            await this.taskManager.create(taskItem).then(() => this.outputHandler.handle());
             taskElement.value = '';
         } catch (error) {
             console.error('Nepavyko sukurti užduoties:', error);
             this.view.showError('Nepavyko sukurti užduoties.');
+        }
+    }
+
+    private async handleDelete(event: Event): Promise<void> {
+        const target = event.target as HTMLElement;
+        if (target && target.classList.contains('delete-button')) {
+            const taskId = target.getAttribute('data-id');
+            if (taskId) {
+                // const confirmed = confirm('Ar tikrai norite ištrinti šią užduotį?');
+                // if (confirmed) {
+                    try {
+                        const task = await this.taskManager.getById(taskId);
+                        if (task) {
+                            await this.taskManager.remove(task);
+                            await this.outputHandler.handle();
+                        } else {
+                            this.view.showError('Užduotis nerasta.');
+                        }
+                    } catch (error) {
+                        console.error('Nepavyko ištrinti užduoties:', error);
+                        this.view.showError('Nepavyko ištrinti užduoties.');
+                    }
+                // }
+            }
         }
     }
 }

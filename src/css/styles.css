@@ -48,3 +48,17 @@ ul {
   gap: 0.5rem;
   margin-left: 1rem;
 }
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  margin: 1rem 2rem;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
