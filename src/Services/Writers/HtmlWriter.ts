@@ -3,7 +3,7 @@ import { Task } from "../../Models/Task";
 import { IModel } from "../../Models/Interfaces/IModel";
 import IManager from "../../Managers/IManager";
 
-export default class HtmlWriter implements IWriter {
+export class HtmlWriter implements IWriter {
 
     constructor(private manager: IManager) {}
 
