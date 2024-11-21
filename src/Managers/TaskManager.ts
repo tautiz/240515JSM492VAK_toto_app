@@ -5,66 +5,103 @@ import IManager from "../Managers/IManager";
 
 export class TaskManager extends BaseManager implements IManager {
     async getAll(): Promise<Task[]> {
-        let tasks: Task[] = [];
-        const response = await fetch('http://localhost:3000/todo');
-        const modelsJson = await response.json();
-
-        modelsJson.forEach((taskData: any): void => {
-            const taskItem = new Task(taskData.title, taskData.description);
-            taskItem.setId(taskData._id);
-            tasks.push(taskItem);
-        });
-        
-        return tasks;
+        try {
+            const response = await fetch('http://localhost:3000/todo');
+            if (!response.ok) {
+                throw new Error('Nepavyko gauti užduočių sąrašo');
+            }
+            const modelsJson = await response.json();
+            
+            return modelsJson.map((taskData: any): Task => {
+                const taskItem = new Task(taskData.title, taskData.author);
+                taskItem.setId(taskData._id);
+                return taskItem;
+            });
+        } catch (error) {
+            console.error('Klaida gaunant užduotis:', error);
+            throw error;
+        }
     }
 
     async create(task: Task): Promise<void> {
-        const rez = await fetch('http://localhost:3000/todo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(task)
-        }).catch((error) => {
+        try {
+            const response = await fetch('http://localhost:3000/todo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: task.getTitle(),
+                    author: task.getAuthor().getId()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Nepavyko sukurti užduoties');
+            }
+
+            const result = await response.json();
+            task.setId(result._id);
+        } catch (error) {
             console.error('Nepavyko sukurti užduoties:', error);
-        });
+            throw error;
+        }
     }
 
     async remove(task: Task): Promise<void> {
-        await fetch(`http://localhost:3000/todo/${task.getId()}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
+        try {
+            const response = await fetch(`http://localhost:3000/todo/${task.getId()}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Nepavyko ištrinti užduoties');
             }
-        });
+        } catch (error) {
+            console.error('Nepavyko ištrinti užduoties:', error);
+            throw error;
+        }
     }
 
-    async update(model: Task): Promise<void> {
-        await fetch(`http://localhost:3000/todo/${model.getId()}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(model)
-        });
+    async update(task: Task): Promise<void> {
+        try {
+            const response = await fetch(`http://localhost:3000/todo/${task.getId()}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: task.getTitle(),
+                    author: task.getAuthor().getId()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Nepavyko atnaujinti užduoties');
+            }
+        } catch (error) {
+            console.error('Nepavyko atnaujinti užduoties:', error);
+            throw error;
+        }
     }
 
     async getById(id: string): Promise<Task | null> {
-        let result: Task | null = null;
-        await fetch(`http://localhost:3000/todo/${id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    result = new Task(data.title, data.description);
-                    result.setId(data._id);
-                    const user = new User(data.author);
-                    user.setId(data.authorId);
-                    result.setAuthor(user);
-                    result.setStatus(data.status);
-                    result.setCreatedAt(data.createdAt);
-                    result.setUpdatedAt(data.updatedAt);
-                }
-            });
-        return result;
+        try {
+            const response = await fetch(`http://localhost:3000/todo/${id}`);
+            if (!response.ok) {
+                throw new Error('Nepavyko rasti užduoties');
+            }
+            
+            const taskData = await response.json();
+            const task = new Task(taskData.title, taskData.author);
+            task.setId(taskData._id);
+            return task;
+        } catch (error) {
+            console.error('Klaida gaunant užduotį:', error);
+            return null;
+        }
     }
 }

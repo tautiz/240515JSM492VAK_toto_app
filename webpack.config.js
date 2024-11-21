@@ -27,5 +27,14 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'public')
+    },
+    devServer: {
+        static: {
+            directory: path.join(__dirname, 'public'),
+        },
+        port: 8081,
+        hot: true,
+        historyApiFallback: true,
+        watchFiles: ['src/**/*']
     }
 };
