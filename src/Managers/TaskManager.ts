@@ -1,22 +1,16 @@
 import {Task} from "../Models/Task";
-import {User} from "../Models/User";
 import BaseManager from "../Managers/BaseManager";
 import IManager from "../Managers/IManager";
+import {ITaskRepository} from "../repositories/interfaces/ITaskRepository";
 
 export class TaskManager extends BaseManager implements IManager {
+    constructor(private taskRepository: ITaskRepository) {
+        super();
+    }
+
     async getAll(): Promise<Task[]> {
         try {
-            const response = await fetch('http://localhost:3000/todo');
-            if (!response.ok) {
-                throw new Error('Nepavyko gauti užduočių sąrašo');
-            }
-            const modelsJson = await response.json();
-            
-            return modelsJson.map((taskData: any): Task => {
-                const taskItem = new Task(taskData.title, taskData.author);
-                taskItem.setId(taskData._id);
-                return taskItem;
-            });
+            return await this.taskRepository.getAll();
         } catch (error) {
             console.error('Klaida gaunant užduotis:', error);
             throw error;
@@ -25,23 +19,9 @@ export class TaskManager extends BaseManager implements IManager {
 
     async create(task: Task): Promise<void> {
         try {
-            const response = await fetch('http://localhost:3000/todo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: task.getTitle(),
-                    author: task.getAuthor().getId()
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Nepavyko sukurti užduoties');
-            }
-
-            const result = await response.json();
-            task.setId(result._id);
+            console.log('TaskManager: Creating task...'); // Debug
+            await this.taskRepository.create(task);
+            console.log('TaskManager: Task created with ID:', task.getId()); // Debug
         } catch (error) {
             console.error('Nepavyko sukurti užduoties:', error);
             throw error;
@@ -50,16 +30,13 @@ export class TaskManager extends BaseManager implements IManager {
 
     async remove(task: Task): Promise<void> {
         try {
-            const response = await fetch(`http://localhost:3000/todo/${task.getId()}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Nepavyko ištrinti užduoties');
+            const taskId = task.getId();
+            if (!taskId) {
+                throw new Error('Task ID is required for deletion');
             }
+            console.log('TaskManager: Removing task with ID:', taskId); // Debug
+            await this.taskRepository.remove(taskId);
+            console.log('TaskManager: Task removed successfully'); // Debug
         } catch (error) {
             console.error('Nepavyko ištrinti užduoties:', error);
             throw error;
@@ -68,20 +45,7 @@ export class TaskManager extends BaseManager implements IManager {
 
     async update(task: Task): Promise<void> {
         try {
-            const response = await fetch(`http://localhost:3000/todo/${task.getId()}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: task.getTitle(),
-                    author: task.getAuthor().getId()
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Nepavyko atnaujinti užduoties');
-            }
+            await this.taskRepository.update(task);
         } catch (error) {
             console.error('Nepavyko atnaujinti užduoties:', error);
             throw error;
@@ -90,18 +54,10 @@ export class TaskManager extends BaseManager implements IManager {
 
     async getById(id: string): Promise<Task | null> {
         try {
-            const response = await fetch(`http://localhost:3000/todo/${id}`);
-            if (!response.ok) {
-                throw new Error('Nepavyko rasti užduoties');
-            }
-            
-            const taskData = await response.json();
-            const task = new Task(taskData.title, taskData.author);
-            task.setId(taskData._id);
-            return task;
+            return await this.taskRepository.getById(id);
         } catch (error) {
-            console.error('Klaida gaunant užduotį:', error);
-            return null;
+            console.error('Nepavyko gauti užduoties:', error);
+            throw error;
         }
     }
 }

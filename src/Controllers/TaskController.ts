@@ -20,18 +20,24 @@ import { User } from "../Models/User";
 import { NotificationService } from "../Services/NotificationService";
 import { AuthService } from "../Services/AuthService";
 import '../css/notifications.css';
+import { createContainer } from "../container";
 
 export class TaskController {
     // Privačios klasės savybės užtikrina enkapsuliaciją
     private taskManager: TaskManager;
     private outputHandler: OutputHandler;
     private notificationService: NotificationService;
+    private htmlWriter: HtmlWriter;
 
     constructor() {
         // Inicializuojame reikalingus servisus
-        this.taskManager = new TaskManager();
-        const htmlWriter = new HtmlWriter(this.taskManager);
-        this.outputHandler = new OutputHandler(this.taskManager, htmlWriter);
+        // Sukuriame container'į
+        const container = createContainer();
+
+        // Sukuriame TaskManager su repository
+        this.taskManager = new TaskManager(container.taskRepository);
+        this.htmlWriter = new HtmlWriter(this.taskManager);
+        this.outputHandler = new OutputHandler(this.taskManager, this.htmlWriter);
         this.notificationService = NotificationService.getInstance();
 
         // Praplečiame globalų fetch metodą, kad pridėtume autorizacijos antraštę
@@ -52,9 +58,7 @@ export class TaskController {
             // Automatiškai apdorojame 401 klaidas (neautorizuotas vartotojas)
             if (response.status === 401) {
                 AuthService.handleUnauthorized();
-                return response;
             }
-            
             return response;
         };
 
@@ -68,6 +72,7 @@ export class TaskController {
      */
     public loadTasks(): void {
         this.outputHandler.handle().catch(error => {
+            console.error('Klaida kraunant užduotis:', error);
             this.notificationService.show('Nepavyko įkelti užduočių.', 'error');
         });
     }
@@ -77,14 +82,14 @@ export class TaskController {
      * Prideda event listenerius prie DOM elementų
      */
     private initialize(): void {
-        // Naudojame event delegation pattern'ą efektyviam event'ų valdymui
-        const createButton = document.querySelector(".todo-form > button") as HTMLButtonElement;
-        createButton.addEventListener("click", () => this.createTask());
-
-        const tasksList = document.getElementById("todo-list") as HTMLDivElement;
-        tasksList.addEventListener("click", (event) => this.handleDelete(event));
+        const form = document.querySelector(".todo-form") as HTMLFormElement;
+        if (form) {
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                this.createTask();
+            });
+        }
     }
-
     /**
      * Naujos užduoties sukūrimo metodas
      * Validuoja įvestį ir naudoja async/await asinchroniniam darbui
@@ -92,55 +97,37 @@ export class TaskController {
     private async createTask(): Promise<void> {
         try {
             const taskElement = document.getElementById("newTaskInput") as HTMLInputElement;
-            const taskTitle: string = taskElement.value;
+            const taskTitle: string = taskElement.value.trim();
 
-            // Validuojame įvestį
-            if (!taskTitle.trim()) {
+            if (!taskTitle) {
                 this.notificationService.show('Užduoties pavadinimas negali būti tuščias.', 'warning');
                 return;
             }
 
-            // Hardcoded vartotojo informacija (realiam projekte turėtų būti paimta iš autentifikacijos)
-            const user = new User('Tautvydas');
-            user.setId("1234");
-
             // Kuriame ir išsaugome naują užduotį
-            const taskItem = new Task(taskTitle, user.getId());
-            await this.taskManager.create(taskItem).then(() => this.outputHandler.handle());
+            const taskItem = new Task(taskTitle);
+            taskItem.setStatus('Active');
+            
+            // Išsaugome užduotį ir laukiame kol gausime atsakymą su ID
+            await this.taskManager.create(taskItem);
+            
+            // Patikriname ar turime ID
+            if (!taskItem.getId()) {
+                throw new Error('Task was created but no ID was received');
+            }
+            
+            console.log('Created task with ID:', taskItem.getId()); // Debug
+            
+            // Tiesiogiai pridedame naują užduotį į DOM TIK po to, kai turime ID
+            await this.htmlWriter.write(taskItem);
+            
+            // Išvalome input lauką
             taskElement.value = '';
+            
+            this.notificationService.show('Užduotis sėkmingai sukurta!', 'success');
         } catch (error) {
             console.error('Nepavyko sukurti užduoties:', error);
             this.notificationService.show('Nepavyko sukurti užduoties.', 'error');
-        }
-    }
-
-    /**
-     * Užduoties ištrynimo metodas
-     * Naudoja event delegation pattern'ą efektyviam event'ų valdymui
-     */
-    private async handleDelete(event: Event): Promise<void> {
-        const target = event.target as HTMLElement;
-        // Tikriname ar paspaustas ištrynimo mygtukas
-        if (target && target.classList.contains('delete-button')) {
-            const taskElement = target.closest('.task-item') as HTMLElement;
-            if (taskElement) {
-                const taskId = taskElement.dataset.taskId;
-                if (taskId) {
-                    try {
-                        // Tikriname ar užduotis egzistuoja prieš ją trinant
-                        const task = await this.taskManager.getById(taskId);
-                        if (task) {
-                            await this.taskManager.remove(task);
-                            await this.outputHandler.handle();
-                        } else {
-                            this.notificationService.show('Užduotis nerasta.', 'error');
-                        }
-                    } catch (error) {
-                        console.error('Nepavyko ištrinti užduoties:', error);
-                        this.notificationService.show('Nepavyko ištrinti užduoties.', 'error');
-                    }
-                }
-            }
         }
     }
 }
