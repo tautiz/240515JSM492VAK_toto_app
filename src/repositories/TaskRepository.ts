@@ -41,7 +41,7 @@ export class TaskRepository implements ITaskRepository {
 
     async getAll(): Promise<Task[]> {
         try {
-            const tasksDto = await this.taskApiService.getAllTasks();
+            let tasksDto = await this.taskApiService.getAllTasks();
             return tasksDto.map(dto => this.mapToTask(dto));
         } catch (error) {
             if (error instanceof ApiError) {

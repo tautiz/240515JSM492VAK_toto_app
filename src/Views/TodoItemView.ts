@@ -1,12 +1,10 @@
-import IWriter from "./IWriter";
-import { Task } from "../../Models/Task";
-import { IModel } from "../../Models/Interfaces/IModel";
-import IManager from "../../Managers/IManager";
+import { Task } from "../Models/Task";
+import { IModel } from "../Models/Interfaces/IModel";
+import IManager from "../Managers/IManager";
 
-export class HtmlWriter implements IWriter {
-    constructor(private manager: IManager) {
-        console.log('HtmlWriter initialized'); // Debug
-    }
+export class TodoItemView {
+    
+    constructor(private manager: IManager) {}
 
     private async handleDelete(taskId: string, todoItem: HTMLElement): Promise<void> {
         console.log('Trying to delete task with ID:', taskId); // Debug
@@ -35,12 +33,8 @@ export class HtmlWriter implements IWriter {
         }
     }
 
-    public async write(model: IModel): Promise<void> {
+    public generateItemElement(model: IModel): HTMLElement {
         const task = model as Task;
-        const taskList = document.querySelector('.todo-list');
-        if (!taskList) {
-            throw new Error('Could not find todo-list element');
-        }
 
         console.log('Creating task element for task:', task); // Debug
 
@@ -80,7 +74,7 @@ export class HtmlWriter implements IWriter {
         todoItem.appendChild(titleLabel);
         todoItem.appendChild(deleteButton);
 
-        taskList.appendChild(todoItem);
+        return todoItem;
     }
     
     clear(): void {

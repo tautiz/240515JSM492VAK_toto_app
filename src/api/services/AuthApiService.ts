@@ -6,7 +6,7 @@ export class AuthApiService {
 
     constructor(private httpClient: HttpClient) {}
 
-    async login(credentials: LoginRequestDto): Promise<LoginResponseDto> {
+    async login(credentials: LoginRequestDto): Promise<LoginResponseDto> {        
         return this.httpClient.post<LoginResponseDto>(`${this.endpoint}/login`, credentials);
     }
 

@@ -8,7 +8,8 @@ export class HttpClient {
         if (!response.ok) {
             throw new ApiError(`GET ${endpoint}`, response.status, await response.text());
         }
-        return response.json();
+        const body = await response.json();
+        return body.items;
     }
 
     async post<T>(endpoint: string, data: any): Promise<T> {

@@ -2,12 +2,10 @@ import { AuthService } from '../Services/AuthService';
 
 export class LoginView {
     private container: HTMLDivElement;
-    private onLoginSuccess: () => void;
 
-    constructor(onLoginSuccess: () => void) {
+    constructor() {
         this.container = document.createElement('div');
         this.container.className = 'login-container';
-        this.onLoginSuccess = onLoginSuccess;
         this.render();
     }
 
@@ -16,18 +14,27 @@ export class LoginView {
     }
 
     private render(): void {
+        console.log('🔄 Rendering login form...');
         this.container.innerHTML = `
-            <form class="login-form">
+            <form class="login-form" id="loginForm">
                 <h2>Login</h2>
                 <div class="error-message" style="display: none; color: red; margin-bottom: 10px;"></div>
-                <input type="text" id="username" placeholder="Username" required>
-                <input type="password" id="password" placeholder="Password" required>
+                <input type="text" id="username" placeholder="Username" required autocomplete>
+                <input type="password" id="password" placeholder="Password" required autocomplete>
                 <button type="submit">Login</button>
             </form>
         `;
 
-        const form = this.container.querySelector('form');
-        form?.addEventListener('submit', this.handleSubmit.bind(this));
+        const form = this.container.querySelector('#loginForm');
+        if (form) {
+            console.log('📝 Form found, attaching submit handler...');
+            form.addEventListener('submit', (event: Event) => {
+                console.log('🚀 Form submission triggered');
+                this.handleSubmit(event);
+            });
+        } else {
+            console.error('❌ Login form not found in DOM!');
+        }
     }
 
     private showError(message: string): void {
@@ -42,7 +49,9 @@ export class LoginView {
     }
 
     private async handleSubmit(event: Event): Promise<void> {
+        console.log('🎯 handleSubmit called');
         event.preventDefault();
+        console.log('🛑 Default form submission prevented');
         this.hideError();
 
         const form = event.target as HTMLFormElement;
@@ -50,9 +59,11 @@ export class LoginView {
         const password = (form.querySelector('#password') as HTMLInputElement).value;
 
         try {
+            console.log('1');
+            
             const authService = AuthService.getInstance();
+            console.log('2');
             if (await authService.login(username, password)) {
-                this.onLoginSuccess();
             } else {
                 this.showError('Neteisingas prisijungimo vardas arba slaptažodis');
             }
